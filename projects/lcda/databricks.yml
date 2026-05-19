@@ -47,16 +47,10 @@ targets:
     resources: null
     workspace:
       host: https://dbc-f887d59d-e4c5.cloud.databricks.com/
-#    run_as:
-#      service_principal_name: 7c47edbc-1af4-42d1-9af0-a9f5e065a96b
-#    permissions:
-#        - service_principal_name: 1844fec1-4a4b-4bf4-bbbc-360b96baa37c
-#          level: CAN_MANAGE
-#        - group_name: dbx_bu_c360_data_engineer
-#          level: CAN_MANAGE
-#        - service_principal_name: 7c47edbc-1af4-42d1-9af0-a9f5e065a96b
-#          level: CAN_MANAGE
-
+    
+    permissions: 
+      - user_name: dansharma@deloitte.com
+        level: CAN_MANAGE
     variables:
           target_env: "dev"
           environment: "dev"
