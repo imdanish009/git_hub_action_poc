@@ -51,6 +51,8 @@ targets:
     permissions: 
       - user_name: dansharma@deloitte.com
         level: CAN_MANAGE
+      - service_principal_name: 13372510-04f1-453d-8b57-412b75a9c967
+        level: CAN_MANAGE
     variables:
           target_env: "dev"
           environment: "dev"
