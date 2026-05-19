@@ -47,7 +47,8 @@ targets:
     resources: null
     workspace:
       host: https://dbc-f887d59d-e4c5.cloud.databricks.com/
-    run_as: 13372510-04f1-453d-8b57-412b75a9c967
+    run_as: 
+      service_principal_name: 13372510-04f1-453d-8b57-412b75a9c967
     permissions: 
       - user_name: dansharma@deloitte.com
         level: CAN_MANAGE
