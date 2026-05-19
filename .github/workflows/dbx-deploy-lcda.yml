@@ -81,17 +81,52 @@ jobs:
           echo "BUNDLE_ROOT=${{ github.workspace }}/$source_path" >> $GITHUB_ENV
         shell: bash
 
+      - name: Fail fast if secrets are missing
+        shell: bash
+        env:
+          SP_CLIENT_ID: ${{ secrets.TF_DATABRICKS_CLIENT_ID }}
+          SP_CLIENT_SECRET: ${{ secrets.TF_DATABRICKS_CLIENT_SECRET }}
+        run: |
+          [[ -n "$SP_CLIENT_ID" ]] || { echo "Missing TF_DATABRICKS_CLIENT_ID"; exit 1; }
+          [[ -n "$SP_CLIENT_SECRET" ]] || { echo "Missing TF_DATABRICKS_CLIENT_SECRET"; exit 1; }
+
       - name: Validate Bundle
+        working-directory: ${{ env.source_path }}
+        shell: bash
+        env:
+          DATABRICKS_AUTH_TYPE: oauth-m2m
+          DATABRICKS_HOST: https://dbc-f887d59d-e4c5.cloud.databricks.com
+          DATABRICKS_CLIENT_ID: ${{ secrets.TF_DATABRICKS_CLIENT_ID }}
+          DATABRICKS_CLIENT_SECRET: ${{ secrets.TF_DATABRICKS_CLIENT_SECRET }}
+          DATABRICKS_CONFIG_FILE: /dev/null
         run: |
-          echo "Validating environment: $TARGET_ENV" 
-          databricks bundle validate -t "$TARGET_ENV" --var="name_added=$NAME_ADDED" --var="bundle_name=$BUNDLE_NAME"
-      
-      ### Running on merge
+          echo "Validating environment: $TARGET_ENV"
+          databricks bundle validate -t "$TARGET_ENV" --var="name_added=$NAME_ADDED"
+
       - name: Deploy DBX asset Bundle
+        working-directory: ${{ env.source_path }}
+        shell: bash
+        env:
+          DATABRICKS_AUTH_TYPE: oauth-m2m
+          DATABRICKS_HOST: https://dbc-f887d59d-e4c5.cloud.databricks.com
+          DATABRICKS_CLIENT_ID: ${{ secrets.TF_DATABRICKS_CLIENT_ID }}
+          DATABRICKS_CLIENT_SECRET: ${{ secrets.TF_DATABRICKS_CLIENT_SECRET }}
+          DATABRICKS_CONFIG_FILE: /dev/null
         run: |
-          echo "Processing environment: $TARGET_ENV"
-          echo "Deploying using databricks bundle deploy to environment: $TARGET_ENV"
-          databricks bundle deploy -t "$TARGET_ENV" --var="name_added=$NAME_ADDED" --var="bundle_name=$BUNDLE_NAME"
+          echo "Deploying to environment: $TARGET_ENV"
+          databricks bundle deploy -t "$TARGET_ENV" --var="name_added=$NAME_ADDED"  
+
+      # - name: Validate Bundle
+      #   run: |
+      #     echo "Validating environment: $TARGET_ENV" 
+      #     databricks bundle validate -t "$TARGET_ENV" --var="name_added=$NAME_ADDED" --var="bundle_name=$BUNDLE_NAME"
+      
+      # ### Running on merge
+      # - name: Deploy DBX asset Bundle
+      #   run: |
+      #     echo "Processing environment: $TARGET_ENV"
+      #     echo "Deploying using databricks bundle deploy to environment: $TARGET_ENV"
+      #     databricks bundle deploy -t "$TARGET_ENV" --var="name_added=$NAME_ADDED" --var="bundle_name=$BUNDLE_NAME"
       
       # - name: Trigger the job defined in the bundle
       #   # This triggers a new run of the job defined in your `databricks.yml`.
