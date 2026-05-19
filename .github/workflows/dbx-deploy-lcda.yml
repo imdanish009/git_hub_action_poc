@@ -23,7 +23,7 @@ concurrency:
 
 permissions:
   id-token: write # This is required for requesting the JWT
-  contents: read  # This is required for actions/checkout
+  contents: read  # This is required for actions/checkout 
 
 jobs:
   EnvSetup:
@@ -81,7 +81,7 @@ jobs:
           echo "BUNDLE_ROOT=${{ github.workspace }}/$source_path" >> $GITHUB_ENV
         shell: bash
 
-      - name: Set Databricks auth variables
+      - name: Set Databricks auth variabless
         shell: bash
         run: |
           echo "DATABRICKS_AUTH_TYPE=oauth-m2m" >> "$GITHUB_ENV"
