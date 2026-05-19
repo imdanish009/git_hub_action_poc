@@ -1,0 +1,106 @@
+name: dbx-deploy-lcda
+
+on:
+  push:
+    branches:
+      - 'qa'
+      - 'main'
+      - 'dev'
+      - 'feature/**'
+
+    paths:
+      - 'projects/lcda/**'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+env:
+  source_path: "projects/lcda"
+  
+  
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read  # This is required for actions/checkout
+
+jobs:
+  EnvSetup:
+    name: Setup Dynamic Environment Variables
+    runs-on: ubuntu-latest
+    outputs:
+      source_dir: ${{ steps.set-output-defaults.outputs.source }}
+    steps:
+      - name: set outputs with default values
+        id: set-output-defaults
+        run: |    
+          echo "source=$source_path" >> "$GITHUB_OUTPUT"
+
+
+
+  deploy-bundle:
+    if: ${{ ((contains(github.event.head_commit.message, 'dev-deploy')) || (github.ref_name == 'qa') || (github.ref_name == 'main')) && success()  }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Determine TARGET Branch and source
+        run: |
+          echo "BRANCH_NAME=${{ github.ref_name }}" >> $GITHUB_ENV 
+          echo "SOURCE_NAME=$(echo $source_path | cut -d'/' -f 2)" >> $GITHUB_ENV
+        shell: bash
+        
+      - name: Determine TARGET Environment
+        run: |
+          if [[ "$BRANCH_NAME" == "main" ]]; then
+            echo "TARGET_ENV=prod" >> $GITHUB_ENV
+            echo "NAME_ADDED=prod" >> $GITHUB_ENV
+          elif [[ $BRANCH_NAME == 'qa' ]]; then
+            echo "TARGET_ENV=qa" >> $GITHUB_ENV
+            echo "NAME_ADDED=qa" >> $GITHUB_ENV
+          else
+            echo "TARGET_ENV=dev" >> $GITHUB_ENV
+            echo "NAME_ADDED=[${{ github.ref_name }}]" >> $GITHUB_ENV
+          fi
+        shell: bash
+        
+      - name: Set Environment Variables
+        run: |
+          echo "Selected TARGET_ENV: $TARGET_ENV"
+          echo "Branch name: $BRANCH_NAME"
+          echo "SOURCE_NAME: $SOURCE_NAME" 
+          echo "DATABRICKS_CLIENT_ID=${{ secrets.TF_DATABRICKS_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "DATABRICKS_CLIENT_SECRET=${{ secrets.TF_DATABRICKS_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "BUNDLE_NAME=${{ github.event.repository.name }}-$SOURCE_NAME-$BRANCH_NAME" >> $GITHUB_ENV
+          echo "BUNDLE_ROOT=${{ github.workspace }}/$source_path" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Set Databricks auth variables
+        shell: bash
+        run: |
+          echo "DATABRICKS_AUTH_TYPE=oauth-m2m" >> "$GITHUB_ENV"
+          echo "DATABRICKS_HOST=https://dbc-f887d59d-e4c5.cloud.databricks.com" >> "$GITHUB_ENV"
+          echo "DATABRICKS_CLIENT_ID=${{ secrets.TF_DATABRICKS_CLIENT_ID }}" >> "$GITHUB_ENV"
+          echo "DATABRICKS_CLIENT_SECRET=${{ secrets.TF_DATABRICKS_CLIENT_SECRET }}" >> "$GITHUB_ENV"
+
+      - name: Validate Bundle
+        run: |
+          echo "Validating environment: $TARGET_ENV" 
+          databricks bundle validate -t "$TARGET_ENV" --var="name_added=$NAME_ADDED" --var="bundle_name=$BUNDLE_NAME"
+      
+      ### Running on merge
+      - name: Deploy DBX asset Bundle
+        run: |
+          echo "Processing environment: $TARGET_ENV"
+          echo "Deploying using databricks bundle deploy to environment: $TARGET_ENV"
+          databricks bundle deploy -t "$TARGET_ENV" --var="name_added=$NAME_ADDED" --var="bundle_name=$BUNDLE_NAME"
+      
+      # - name: Trigger the job defined in the bundle
+      #   # This triggers a new run of the job defined in your `databricks.yml`.
+      #   run: databricks bundle run -t "$TARGET_ENV" --var="name_added=$NAME_ADDED" --var="bundle_name=$BUNDLE_NAME" CDIP_CONTROL_TABLE_DDL_CREATION

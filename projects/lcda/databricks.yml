@@ -1,0 +1,64 @@
+# The name of the bundle. run `databricks bundle schema` to see the full bundle settings schema.
+
+
+bundle:
+  name: ${var.bundle_name}
+
+variables:
+  target_env:
+    description: env deploying to..
+    default: dev
+
+  name_added:
+    description: Prefix/suffix for target naming
+    default: ""
+
+  environment:
+    description: deployment environment
+    default: dev
+
+  bundle_name:
+    description: The name of the bundle
+    default: ""
+
+  src_catalog_lnd:
+    description: The name of the src_catalog_lnd
+    default: ""
+
+  src_schema_cdb:
+    description: The name of the src_schema_cdb
+    default: ""
+
+
+
+include:
+  - ./resources/**/*workflow.yml
+  - ./resources/jobs/*/*/*workflow.yml
+  - ./resources/jobs/*/*/*/*workflow.yml
+## Deployment Target specific values for workspace
+targets:
+  dev:
+    presets:
+      name_prefix: ${var.name_added}
+      pipelines_development: true # set development to true for pipelines
+      trigger_pause_status: PAUSED # set pause_status to PAUSED for all triggers and schedules
+      jobs_max_concurrent_runs: 10 # set max_concurrent runs to 10 for all jobs
+    default: true
+    resources: null
+    workspace:
+      host: https://dbc-f887d59d-e4c5.cloud.databricks.com/
+#    run_as:
+#      service_principal_name: 7c47edbc-1af4-42d1-9af0-a9f5e065a96b
+#    permissions:
+#        - service_principal_name: 1844fec1-4a4b-4bf4-bbbc-360b96baa37c
+#          level: CAN_MANAGE
+#        - group_name: dbx_bu_c360_data_engineer
+#          level: CAN_MANAGE
+#        - service_principal_name: 7c47edbc-1af4-42d1-9af0-a9f5e065a96b
+#          level: CAN_MANAGE
+
+    variables:
+          target_env: "dev"
+          environment: "dev"
+          src_catalog_lnd: "cdb_source_catalog"
+          src_schema_cdb: "cdb"

@@ -1,0 +1,35 @@
+defaults: &defaults
+  resources: null
+
+resource_def: &resource_def  
+  resources:
+    jobs:
+      LCDA_EXTRACTION_JOB:
+        tasks:
+          - task_key: LCDA-CDB-SCHEMA-VALIDATION-TASK
+            notebook_task:
+              notebook_path: ../../../../src/tasks/data load/framework/cdb_scehma_validation_with_audit.ipynb
+              source: WORKSPACE
+              base_parameters:
+                catalog_name: ${var.src_catalog_lnd}
+                schema_name: ${var.src_schema_cdb}
+
+          - task_key: LCDA-CDB-AUTOLOADER-TASK
+            depends_on: LCDA-CDB-SCHEMA-VALIDATION-TASK
+            notebook_task:
+              notebook_path: ../../../../src/tasks/data load/source/CDB/autoloader_with_logg.ipynb
+              source: WORKSPACE
+              base_parameters:
+                catalog_name: ${var.src_catalog_lnd}
+                schema_name: ${var.src_schema_cdb}
+
+        queue:
+          enabled: true
+        parameters:
+            - name:  role_name
+              default: demo
+
+        performance_target: PERFORMANCE_OPTIMIZED
+targets:
+  dev:
+    <<: *resource_def

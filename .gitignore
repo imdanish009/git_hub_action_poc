@@ -1,0 +1,4 @@
+*.env*
+*.db
+.aws-sam*
+UT Documents/
