@@ -8,11 +8,12 @@ resource_def: &resource_def
         tasks:
           - task_key: LCDA-CDB-SCHEMA-VALIDATION-TASK
             notebook_task:
-              notebook_path: ../../../../src/tasks/data load/framework/LCDA_STTM_TRANSFORMATION_FRAMEWORK.ipynb
+              notebook_path: projects\lcda\src\tasks\data load\framework\LCDA_STTM_TRANSFORMATION_FRAMEWORK.ipynb
               source: WORKSPACE
               base_parameters:
                 catalog_name: ${var.src_catalog_lnd}
                 schema_name: ${var.src_schema_cdb}
+                
 
         queue:
           enabled: true
