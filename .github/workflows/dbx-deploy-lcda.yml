@@ -81,14 +81,6 @@ jobs:
           echo "BUNDLE_ROOT=${{ github.workspace }}/$source_path" >> $GITHUB_ENV
         shell: bash
 
-      - name: Set Databricks auth variabless
-        shell: bash
-        run: |
-          echo "DATABRICKS_AUTH_TYPE=oauth-m2m" >> "$GITHUB_ENV"
-          echo "DATABRICKS_HOST=https://dbc-f887d59d-e4c5.cloud.databricks.com" >> "$GITHUB_ENV"
-          echo "DATABRICKS_CLIENT_ID=${{ secrets.TF_DATABRICKS_CLIENT_ID }}" >> "$GITHUB_ENV"
-          echo "DATABRICKS_CLIENT_SECRET=${{ secrets.TF_DATABRICKS_CLIENT_SECRET }}" >> "$GITHUB_ENV"
-
       - name: Validate Bundle
         run: |
           echo "Validating environment: $TARGET_ENV" 
