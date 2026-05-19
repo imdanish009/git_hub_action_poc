@@ -5,6 +5,9 @@ resource_def: &resource_def
   resources:
     jobs:
       LCDA_EXTRACTION_JOB:
+        name: LCDA_EXTRACTION_JOB
+        tags:
+          Type: TEST POC
         tasks:
           - task_key: LCDA-CDB-SCHEMA-VALIDATION-TASK
             notebook_task:
@@ -13,7 +16,7 @@ resource_def: &resource_def
               base_parameters:
                 catalog_name: ${var.src_catalog_lnd}
                 schema_name: ${var.src_schema_cdb}
-                
+
 
         queue:
           enabled: true
@@ -22,8 +25,7 @@ resource_def: &resource_def
               default: demo
 
         performance_target: PERFORMANCE_OPTIMIZED
-        tags:
-          Type: TEST POC
+        
 targets:
   dev:
     <<: *resource_def
