@@ -8,16 +8,7 @@ resource_def: &resource_def
         tasks:
           - task_key: LCDA-CDB-SCHEMA-VALIDATION-TASK
             notebook_task:
-              notebook_path: ../../../../src/tasks/data load/framework/cdb_scehma_validation_with_audit.ipynb
-              source: WORKSPACE
-              base_parameters:
-                catalog_name: ${var.src_catalog_lnd}
-                schema_name: ${var.src_schema_cdb}
-
-          - task_key: LCDA-CDB-AUTOLOADER-TASK
-            depends_on: LCDA-CDB-SCHEMA-VALIDATION-TASK
-            notebook_task:
-              notebook_path: ../../../../src/tasks/data load/source/CDB/autoloader_with_logg.ipynb
+              notebook_path: ../../../../src/tasks/data load/framework/LCDA_STTM_TRANSFORMATION_FRAMEWORK.ipynb
               source: WORKSPACE
               base_parameters:
                 catalog_name: ${var.src_catalog_lnd}
@@ -30,6 +21,8 @@ resource_def: &resource_def
               default: demo
 
         performance_target: PERFORMANCE_OPTIMIZED
+        tags:
+          Type: TEST POC
 targets:
   dev:
     <<: *resource_def
